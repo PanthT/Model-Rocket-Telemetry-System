@@ -1,4 +1,6 @@
+#include <Arduino.h>
 #include <Wire.h>
+#include "RF.h"
 #include <Adafruit_BMP085.h>
 #include <MPU9250.h>
 #include <math.h>
@@ -60,6 +62,10 @@ void setup() {
     "ax_g,ay_g,az_g,gx_dps,gy_dps,gz_dps"
   ));
 
+  if (!beginRF()) {
+    Serial.println(F("# ERROR: RF initialization failed; USB output continues"));
+  }
+
   lastOutputMs = millis();
 }
 
@@ -99,6 +105,8 @@ void loop() {
   const float heightM =
       44330.0f *
       (1.0f - powf(float(pressurePa) / groundPressurePa, 0.1903f));
+
+  sendRF({now, temperatureC, pressurePa, heightM, {ax, ay, az}, {gx, gy, gz}});
 
   Serial.print(now);
   Serial.print(',');
